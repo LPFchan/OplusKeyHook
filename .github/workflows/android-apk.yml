@@ -38,9 +38,24 @@ jobs:
       - name: Build release APK
         run: gradle --no-daemon :app:assembleRelease
 
+      - name: Check signing configuration
+        id: signing_config
+        env:
+          ANDROID_SIGNING_KEY: ${{ secrets.ANDROID_SIGNING_KEY }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          if [[ -n "$ANDROID_SIGNING_KEY" && -n "$ANDROID_KEY_ALIAS" && -n "$ANDROID_KEYSTORE_PASSWORD" && -n "$ANDROID_KEY_PASSWORD" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Sign release APK
         id: sign_apk
-        if: ${{ secrets.ANDROID_SIGNING_KEY != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+        if: ${{ steps.signing_config.outputs.available == 'true' }}
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: app/build/outputs/apk/release
