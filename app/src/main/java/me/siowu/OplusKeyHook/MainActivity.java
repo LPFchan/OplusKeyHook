@@ -453,7 +453,7 @@ public class MainActivity extends AppCompatActivity {
         List<String> items = new ArrayList<>();
         items.add(getString(R.string.prompt_select_app));
         if (options.isEmpty()) {
-            items.set(0, getString(R.string.no_apps_found));
+            items.add(getString(R.string.no_apps_found));
             return items;
         }
         for (AppOption option : options) {
@@ -466,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
         List<String> items = new ArrayList<>();
         items.add(getString(R.string.prompt_select_activity));
         if (options.isEmpty()) {
-            items.set(0, getString(R.string.no_activities_found));
+            items.add(getString(R.string.no_activities_found));
             return items;
         }
         for (ActivityOption option : options) {
