@@ -265,8 +265,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Drawable icon = applicationInfo.loadIcon(packageManager);
                     boolean systemApp = isSystemApp(applicationInfo);
-                    boolean launchable = packageManager.getLaunchIntentForPackage(packageName) != null;
-                    options.add(new AppOption(label, packageName, icon, systemApp, launchable));
+                    options.add(new AppOption(label, packageName, icon, systemApp));
                 }
             } catch (Exception e) {
                 Log.e("MainActivity", "loadInstalledApps", e);
@@ -487,7 +486,7 @@ public class MainActivity extends AppCompatActivity {
             if (option.systemApp != showSystemApps) {
                 continue;
             }
-            if (launchableOnly && !option.launchable) {
+            if (launchableOnly && !isLaunchableApp(option)) {
                 continue;
             }
             if (!query.isEmpty()) {
@@ -558,6 +557,14 @@ public class MainActivity extends AppCompatActivity {
     private boolean isSystemApp(ApplicationInfo applicationInfo) {
         return (applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0
                 || (applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0;
+    }
+
+    private boolean isLaunchableApp(AppOption option) {
+        if (option.launchable != null) {
+            return option.launchable;
+        }
+        option.launchable = getPackageManager().getLaunchIntentForPackage(option.packageName) != null;
+        return option.launchable;
     }
 
     private void updateAppPickerStatus(String message, boolean loading) {
@@ -849,14 +856,13 @@ public class MainActivity extends AppCompatActivity {
         private final String packageName;
         private final Drawable icon;
         private final boolean systemApp;
-        private final boolean launchable;
+        private Boolean launchable;
 
-        private AppOption(String label, String packageName, Drawable icon, boolean systemApp, boolean launchable) {
+        private AppOption(String label, String packageName, Drawable icon, boolean systemApp) {
             this.label = label;
             this.packageName = packageName;
             this.icon = icon;
             this.systemApp = systemApp;
-            this.launchable = launchable;
         }
     }
 
