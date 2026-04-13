@@ -57,9 +57,9 @@ This module hooks the native system key listener to intercept shortcut-key event
 
 - Separate actions for single press, double press, and long press
 - One-tap launch for WeChat/Alipay payment codes and scanner pages
-- Support for Breeno shortcuts, Flash Notes, Breeno Memory, and other common actions via [Breeno shortcut ID guide](https://github.com/siowu/OplusKeyHook/blob/main/docs/%E8%8E%B7%E5%8F%96%E5%B0%8F%E5%B8%83%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4ID%E6%95%99%E7%A8%8B.md)
-- Support for launching a custom Activity via [custom Activity guide](https://github.com/siowu/OplusKeyHook/blob/main/docs/%E8%87%AA%E5%AE%9A%E4%B9%89Activity%E6%95%99%E7%A8%8B.md)
-- Support for invoking a custom URL scheme via [custom URL scheme guide](https://github.com/siowu/OplusKeyHook/blob/main/docs/%E8%87%AA%E5%AE%9A%E4%B9%89UrlScheme%E6%95%99%E7%A8%8B.md)
+- Support for Breeno shortcuts, Flash Notes, Breeno Memory, and other common actions via the [Breeno shortcut ID guide (Chinese)](https://github.com/siowu/OplusKeyHook/blob/main/docs/%E8%8E%B7%E5%8F%96%E5%B0%8F%E5%B8%83%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4ID%E6%95%99%E7%A8%8B.md)
+- Support for launching a custom Activity via the [custom Activity guide (Chinese)](https://github.com/siowu/OplusKeyHook/blob/main/docs/%E8%87%AA%E5%AE%9A%E4%B9%89Activity%E6%95%99%E7%A8%8B.md)
+- Support for invoking a custom URL scheme via the [custom URL scheme guide (Chinese)](https://github.com/siowu/OplusKeyHook/blob/main/docs/%E8%87%AA%E5%AE%9A%E4%B9%89UrlScheme%E6%95%99%E7%A8%8B.md)
 - Support for executing shell commands
 - Optional vibration feedback and support for running while the screen is off, then waking the screen for unlock
 

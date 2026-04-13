@@ -79,7 +79,7 @@ jobs:
             exit 1
           fi
 
-          VERSION="$(gradle --no-daemon -q :app:printVersionName)"
+          VERSION="$(gradle --no-daemon -q :app:printVersionName | tail -n 1)"
           OUTPUT_NAME="OplusKeyHook-v${VERSION}.apk"
           cp "$SOURCE_APK" "$RUNNER_TEMP/$OUTPUT_NAME"
           echo "artifact_path=$RUNNER_TEMP/$OUTPUT_NAME" >> "$GITHUB_OUTPUT"
