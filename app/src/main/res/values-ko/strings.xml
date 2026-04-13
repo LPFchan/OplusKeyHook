@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">키 사용자 지정</string>
+    <string name="app_name">OplusKeyHook</string>
+    <string name="xposed_description">ColorOS 및 OxygenOS용 단축키 사용자 정의 모듈 by Coolapk @西瓜味的奥利奥</string>
     <string name="label_gesture">트리거 선택</string>
     <string name="label_function">단축키 기능 선택</string>
     <string name="label_common_action">자주 쓰는 기능 선택</string>
@@ -10,6 +11,7 @@
     <string name="label_url_scheme">URL 스킴</string>
     <string name="label_xiaobu_shortcut_id">Breeno 단축 명령 ID</string>
     <string name="label_shell_command">Shell 명령</string>
+    <string name="label_behavior">동작 설정</string>
     <string name="label_vibrate_feedback">진동 피드백 사용</string>
     <string name="label_execute_when_screen_off">화면이 꺼져 있을 때도 실행</string>
     <string name="action_save">설정 저장</string>

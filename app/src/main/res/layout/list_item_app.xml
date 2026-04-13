@@ -2,11 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
-    android:minHeight="56dp"
+    android:minHeight="64dp"
     android:orientation="horizontal"
-    android:paddingHorizontal="8dp"
-    android:paddingVertical="10dp">
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="12dp">
 
     <ImageView
         android:id="@+id/imageAppIcon"
@@ -20,23 +21,23 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textAppLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textSize="16sp" />
+            android:textAppearance="?attr/textAppearanceBodyLarge" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textAppPackage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="12sp" />
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
     </LinearLayout>
 
 </LinearLayout>

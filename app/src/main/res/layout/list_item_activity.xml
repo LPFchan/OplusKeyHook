@@ -2,27 +2,25 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="56dp"
+    android:background="?attr/selectableItemBackground"
+    android:minHeight="64dp"
     android:orientation="vertical"
-    android:paddingHorizontal="8dp"
-    android:paddingVertical="10dp">
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="12dp">
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textActivityLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textSize="16sp" />
+        android:textAppearance="?attr/textAppearanceBodyLarge" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textActivityClass"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="12sp" />
+        android:lineSpacingExtra="2dp"
+        android:textAppearance="?attr/textAppearanceBodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant" />
 
 </LinearLayout>

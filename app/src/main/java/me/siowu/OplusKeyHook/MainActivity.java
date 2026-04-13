@@ -1,6 +1,5 @@
 package me.siowu.OplusKeyHook;
 
-import android.app.AlertDialog;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -30,6 +29,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
+
+import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -51,11 +54,14 @@ public class MainActivity extends AppCompatActivity {
     private static final String TYPE_CUSTOM_URL_SCHEME = "custom_url_scheme";
     private static final String TYPE_CUSTOM_SHELL = "custom_shell";
 
-    private Spinner spinnerGesture;
+    private MaterialButtonToggleGroup gestureToggleGroup;
     private Spinner spinnerType;
     private Spinner spinnerCommon;
     private Button btnSelectApp;
     private Button btnSelectActivity;
+    private Button btnGestureSingle;
+    private Button btnGestureDouble;
+    private Button btnGestureLong;
     private EditText editUrlScheme;
     private EditText editxiaobuShortcuts;
     private EditText editShell;
@@ -87,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup radioAppFilter;
     private TextView textAppPickerStatus;
     private TextView textActivityPickerStatus;
+    private boolean isSyncingGestureSelection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,9 +110,12 @@ public class MainActivity extends AppCompatActivity {
             ).show());
         }
 
-        spinnerGesture = findViewById(R.id.spinnerGesture);
+        gestureToggleGroup = findViewById(R.id.gestureToggleGroup);
         spinnerType = findViewById(R.id.spinnerType);
         spinnerCommon = findViewById(R.id.spinnerCommon);
+        btnGestureSingle = findViewById(R.id.buttonGestureSingle);
+        btnGestureDouble = findViewById(R.id.buttonGestureDouble);
+        btnGestureLong = findViewById(R.id.buttonGestureLong);
         btnSelectApp = findViewById(R.id.btnSelectApp);
         btnSelectActivity = findViewById(R.id.btnSelectActivity);
         editUrlScheme = findViewById(R.id.editUrlScheme);
@@ -123,19 +133,9 @@ public class MainActivity extends AppCompatActivity {
         checkboxExecuteWhenScreenOff = findViewById(R.id.checkboxExecuteWhenScreenOff);
         btnSave = findViewById(R.id.btnSave);
 
+        setupGestureSelector();
         setupStaticSpinners();
         setupSelectionButtons();
-
-        spinnerGesture.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                loadGestureConfig(pos);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
 
         spinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -154,15 +154,21 @@ public class MainActivity extends AppCompatActivity {
         loadGestureConfig(0);
     }
 
-    private void setupStaticSpinners() {
-        ArrayAdapter<String> adapterGesture = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.gesture_options)))
-        );
-        adapterGesture.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerGesture.setAdapter(adapterGesture);
+    private void setupGestureSelector() {
+        String[] gestureLabels = getResources().getStringArray(R.array.gesture_options);
+        btnGestureSingle.setText(gestureLabels[0]);
+        btnGestureDouble.setText(gestureLabels[1]);
+        btnGestureLong.setText(gestureLabels[2]);
 
+        gestureToggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isSyncingGestureSelection || !isChecked) {
+                return;
+            }
+            loadGestureConfig(getGestureIndexForButtonId(checkedId));
+        });
+    }
+
+    private void setupStaticSpinners() {
         ArrayAdapter<String> adapterType = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
@@ -195,6 +201,13 @@ public class MainActivity extends AppCompatActivity {
     private void loadGestureConfig(int gesture) {
         String prefix = getPrefix(gesture);
 
+        isSyncingGestureSelection = true;
+        try {
+            gestureToggleGroup.check(getGestureButtonId(gesture));
+        } finally {
+            isSyncingGestureSelection = false;
+        }
+
         spinnerType.setSelection(getTypeIndex(SPUtils.getString(prefix + "type", TYPE_NONE)));
         spinnerCommon.setSelection(SPUtils.getInt(prefix + "common_index", 0));
 
@@ -214,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveConfig() {
-        int gesture = spinnerGesture.getSelectedItemPosition();
+        int gesture = getSelectedGestureIndex();
         String prefix = getPrefix(gesture);
         String type = getSelectedTypeValue();
 
@@ -421,7 +434,7 @@ public class MainActivity extends AppCompatActivity {
         radioAppFilter.setOnCheckedChangeListener((group, checkedId) -> applyAppPickerFilter());
         btnRefreshApps.setOnClickListener(v -> loadInstalledApps(true, null));
 
-        appPickerDialog = new AlertDialog.Builder(this)
+        appPickerDialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.dialog_title_select_app)
                 .setView(dialogView)
                 .setNegativeButton(R.string.action_confirm, null)
@@ -457,7 +470,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnRefreshActivities.setOnClickListener(v -> loadActivitiesForPackage(selectedPackageName, true, null));
 
-        activityPickerDialog = new AlertDialog.Builder(this)
+        activityPickerDialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.dialog_title_select_activity)
                 .setView(dialogView)
                 .setNegativeButton(R.string.action_confirm, null)
@@ -624,6 +637,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private int getGestureButtonId(int gesture) {
+        switch (gesture) {
+            case 1:
+                return R.id.buttonGestureDouble;
+            case 2:
+                return R.id.buttonGestureLong;
+            case 0:
+            default:
+                return R.id.buttonGestureSingle;
+        }
+    }
+
+    private int getGestureIndexForButtonId(int buttonId) {
+        if (buttonId == R.id.buttonGestureDouble) {
+            return 1;
+        }
+        if (buttonId == R.id.buttonGestureLong) {
+            return 2;
+        }
+        return 0;
+    }
+
+    private int getSelectedGestureIndex() {
+        int checkedId = gestureToggleGroup.getCheckedButtonId();
+        return getGestureIndexForButtonId(checkedId);
+    }
+
     private int getTypeIndex(String type) {
         switch (type) {
             case TYPE_NONE:
@@ -721,7 +761,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showShellPermissionDialog() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.dialog_title_notice)
                 .setMessage(R.string.dialog_shell_permission_message)
                 .setCancelable(false)

@@ -1,218 +1,357 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp">
+    android:background="?attr/colorSurface"
+    android:fillViewport="true"
+    android:clipToPadding="false"
+    android:paddingStart="16dp"
+    android:paddingTop="20dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="32dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="8dp"
-            android:text="@string/label_gesture"
-            android:textSize="16sp" />
-
-        <Spinner
-            android:id="@+id/spinnerGesture"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"
-            android:text="@string/label_function"
-            android:textSize="16sp" />
-
-        <Spinner
-            android:id="@+id/spinnerType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <!-- 常用功能选择 -->
-        <LinearLayout
-            android:id="@+id/layoutCommon"
+        <com.google.android.material.textview.MaterialTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="vertical"
-            android:visibility="gone">
+            android:paddingBottom="12dp"
+            android:text="@string/app_name"
+            android:textAppearance="?attr/textAppearanceHeadlineLarge"
+            android:textColor="?attr/colorOnBackground"
+            android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_common_action" />
-
-            <Spinner
-                android:id="@+id/spinnerCommon"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <!-- 自定义 Activity -->
-        <LinearLayout
-            android:id="@+id/layoutCustomActivity"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_app" />
-
-            <Button
-                android:id="@+id/btnSelectApp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/prompt_select_app"
-                android:textAllCaps="false" />
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp">
 
             <LinearLayout
-                android:id="@+id/layoutActivitySelection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:padding="16dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/label_activity" />
-
-                <Button
-                    android:id="@+id/btnSelectActivity"
+                <com.google.android.material.textview.MaterialTextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/prompt_select_activity"
-                    android:textAllCaps="false" />
+                    android:paddingBottom="12dp"
+                    android:text="@string/label_gesture"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/label_selected_activity" />
-
-                <TextView
-                    android:id="@+id/textSelectedActivity"
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/gestureToggleGroup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/not_selected"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="12sp" />
+                    app:checkedButton="@id/buttonGestureSingle"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonGestureSingle"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textAllCaps="false" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonGestureDouble"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textAllCaps="false" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonGestureLong"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textAllCaps="false" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
             </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/label_selected_package" />
-
-            <TextView
-                android:id="@+id/textSelectedPackage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/not_selected"
-                android:textColor="?android:attr/textColorSecondary"
-                android:textSize="12sp" />
-
-        </LinearLayout>
-
-        <!-- 自定义 URL Scheme -->
-        <LinearLayout
-            android:id="@+id/layoutUrlScheme"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="vertical"
-            android:visibility="gone">
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_url_scheme" />
-
-            <EditText
-                android:id="@+id/editUrlScheme"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_url_scheme" />
-        </LinearLayout>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <!-- 快捷指令ID -->
-        <LinearLayout
-            android:id="@+id/layoutxiaobuShortcuts"
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="12dp"
+                    android:text="@string/label_function"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                <Spinner
+                    android:id="@+id/spinnerType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <!-- 常用功能选择 -->
+                <LinearLayout
+                    android:id="@+id/layoutCommon"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp"
+                        android:text="@string/label_common_action"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <Spinner
+                        android:id="@+id/spinnerCommon"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <!-- 自定义 Activity -->
+                <LinearLayout
+                    android:id="@+id/layoutCustomActivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp"
+                        android:text="@string/label_app"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSelectApp"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/prompt_select_app"
+                        android:textAllCaps="false" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutActivitySelection"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:paddingBottom="8dp"
+                            android:text="@string/label_activity"
+                            android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSelectActivity"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/prompt_select_activity"
+                            android:textAllCaps="false" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:paddingBottom="4dp"
+                            android:text="@string/label_selected_activity"
+                            android:textAppearance="?attr/textAppearanceLabelLarge" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/textSelectedActivity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/not_selected"
+                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:paddingBottom="4dp"
+                        android:text="@string/label_selected_package"
+                        android:textAppearance="?attr/textAppearanceLabelLarge" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/textSelectedPackage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/not_selected"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+
+                <!-- 自定义 URL Scheme -->
+                <LinearLayout
+                    android:id="@+id/layoutUrlScheme"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp"
+                        android:text="@string/label_url_scheme"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:hint="@string/hint_url_scheme"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editUrlScheme"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textUri" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- 快捷指令ID -->
+                <LinearLayout
+                    android:id="@+id/layoutxiaobuShortcuts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp"
+                        android:text="@string/label_xiaobu_shortcut_id"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:hint="@string/hint_xiaobu_shortcut_id"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editxiaobuShortcuts"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textNoSuggestions" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- Shell 命令 -->
+                <LinearLayout
+                    android:id="@+id/layoutShell"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp"
+                        android:text="@string/label_shell_command"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:hint="@string/hint_shell_command"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editShell"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textNoSuggestions" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="vertical"
-            android:visibility="gone">
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_xiaobu_shortcut_id" />
-
-            <EditText
-                android:id="@+id/editxiaobuShortcuts"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_xiaobu_shortcut_id" />
-        </LinearLayout>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <!-- 快捷指令ID -->
-        <LinearLayout
-            android:id="@+id/layoutShell"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="vertical"
-            android:visibility="gone">
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="12dp"
+                    android:text="@string/label_behavior"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_shell_command" />
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/checkboxVibrate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/label_vibrate_feedback" />
 
-            <EditText
-                android:id="@+id/editShell"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/hint_shell_command" />
-        </LinearLayout>
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/checkboxExecuteWhenScreenOff"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:checked="true"
+                    android:text="@string/label_execute_when_screen_off" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-        <CheckBox
-            android:id="@+id/checkboxVibrate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:checked="true"
-            android:text="@string/label_vibrate_feedback" />
-
-        <CheckBox
-            android:id="@+id/checkboxExecuteWhenScreenOff"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
-            android:checked="true"
-            android:text="@string/label_execute_when_screen_off" />
-
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
+            style="@style/Widget.Material3.Button.ElevatedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/action_save" />
+            android:text="@string/action_save"
+            android:textAllCaps="false" />
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

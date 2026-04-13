@@ -29,7 +29,7 @@
             android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="ColorOS快捷键功能自定义 by酷安@西瓜味的奥利奥" />
+            android:value="@string/xposed_description" />
         <meta-data
             android:name="xposedminversion"
             android:value="53" />
