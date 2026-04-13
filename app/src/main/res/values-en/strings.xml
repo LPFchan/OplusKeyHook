@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Key Customizer</string>
+    <string name="label_gesture">Select trigger</string>
+    <string name="label_function">Select shortcut action</string>
+    <string name="label_common_action">Select common action</string>
+    <string name="label_app">Select app</string>
+    <string name="label_activity">Select activity</string>
+    <string name="label_selected_package">Selected package</string>
+    <string name="label_selected_activity">Selected activity</string>
+    <string name="label_url_scheme">URL scheme</string>
+    <string name="label_xiaobu_shortcut_id">Breeno shortcut ID</string>
+    <string name="label_shell_command">Shell command</string>
+    <string name="label_vibrate_feedback">Enable vibration feedback</string>
+    <string name="label_execute_when_screen_off">Run while the screen is off</string>
+    <string name="action_save">Save settings</string>
+    <string name="hint_url_scheme">Example: weixin://</string>
+    <string name="hint_xiaobu_shortcut_id">Paste the captured ID here</string>
+    <string name="hint_shell_command">Enter the command to execute</string>
+    <string name="message_activate_module_first">Please activate the module first</string>
+    <string name="message_saved">Saved (takes effect in 3 seconds)</string>
+    <string name="message_root_granted">Root permission granted</string>
+    <string name="message_root_denied">Root permission denied, shell commands cannot run</string>
+    <string name="dialog_title_notice">Notice</string>
+    <string name="dialog_shell_permission_message">Because of system restrictions, running shell commands requires both root permission and auto-start permission.\nThe app only starts when the command runs and exits automatically afterwards, so it will not stay in memory.\nIn some cases, you may also need to fully allow background activity in the battery settings.</string>
+    <string name="action_authorize">Authorize</string>
+    <string name="action_confirm">OK</string>
+    <string name="prompt_select_app">Select an app</string>
+    <string name="prompt_select_activity">Select an activity</string>
+    <string name="loading_apps">Scanning installed apps…</string>
+    <string name="loading_activities">Scanning activities…</string>
+    <string name="no_apps_found">No available apps found</string>
+    <string name="no_activities_found">No available activities found</string>
+    <string name="not_selected">Not selected</string>
+</resources>
