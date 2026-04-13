@@ -74,6 +74,11 @@ jobs:
             SOURCE_APK="app/build/outputs/apk/release/app-release-unsigned.apk"
           fi
 
+          if [[ ! -f "$SOURCE_APK" ]]; then
+            echo "Expected APK not found: $SOURCE_APK" >&2
+            exit 1
+          fi
+
           VERSION="$(gradle --no-daemon -q :app:printVersionName)"
           OUTPUT_NAME="OplusKeyHook-v${VERSION}.apk"
           cp "$SOURCE_APK" "$RUNNER_TEMP/$OUTPUT_NAME"
