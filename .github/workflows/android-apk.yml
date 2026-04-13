@@ -32,9 +32,11 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
 
       - name: Build release APK
-        run: ./gradlew --no-daemon :app:assembleRelease
+        run: gradle --no-daemon :app:assembleRelease
 
       - name: Sign release APK
         id: sign_apk
@@ -57,7 +59,7 @@ jobs:
             SOURCE_APK="app/build/outputs/apk/release/app-release-unsigned.apk"
           fi
 
-          VERSION="$(./gradlew --no-daemon -q :app:printVersionName)"
+          VERSION="$(gradle --no-daemon -q :app:printVersionName)"
           OUTPUT_NAME="OplusKeyHook-v${VERSION}.apk"
           cp "$SOURCE_APK" "$RUNNER_TEMP/$OUTPUT_NAME"
           echo "artifact_path=$RUNNER_TEMP/$OUTPUT_NAME" >> "$GITHUB_OUTPUT"
