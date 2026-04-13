@@ -310,9 +310,9 @@ public class KeyHook {
                 queryIntent.setPackage(packageName);
                 List<ResolveInfo> resolveInfos;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    resolveInfos = packageManager.queryIntentActivities(queryIntent, PackageManager.ResolveInfoFlags.of(0));
+                    resolveInfos = packageManager.queryIntentActivities(queryIntent, PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY));
                 } else {
-                    resolveInfos = packageManager.queryIntentActivities(queryIntent, 0);
+                    resolveInfos = packageManager.queryIntentActivities(queryIntent, PackageManager.MATCH_DEFAULT_ONLY);
                 }
                 if (!resolveInfos.isEmpty()) {
                     ResolveInfo resolveInfo = resolveInfos.get(0);

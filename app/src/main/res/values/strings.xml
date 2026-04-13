@@ -32,9 +32,11 @@
     <string name="dialog_title_select_activity">选择 Activity</string>
     <string name="label_user_apps">用户应用</string>
     <string name="label_system_apps">系统应用</string>
+    <string name="label_search_apps">搜索应用</string>
     <string name="loading_apps">正在扫描应用列表…</string>
     <string name="loading_activities">正在扫描 Activity 列表…</string>
     <string name="no_apps_found">未找到可用应用</string>
     <string name="no_activities_found">未找到可用 Activity</string>
     <string name="not_selected">未选择</string>
+    <string name="content_description_app_icon">%1$s 图标</string>
 </resources>

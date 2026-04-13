@@ -749,7 +749,7 @@ public class MainActivity extends AppCompatActivity {
             return position;
         }
 
-        void setLoading(boolean loading) {
+        private void setLoading(boolean loading) {
             this.loading = loading;
             notifyDataSetChanged();
         }
@@ -771,6 +771,7 @@ public class MainActivity extends AppCompatActivity {
 
             AppOption option = filteredAppOptions.get(position);
             holder.icon.setImageDrawable(option.icon);
+            holder.icon.setContentDescription(getString(R.string.content_description_app_icon, option.label));
             holder.label.setText(option.label);
             holder.detail.setText(option.packageName);
             return convertView;
@@ -795,7 +796,7 @@ public class MainActivity extends AppCompatActivity {
             return position;
         }
 
-        void setLoading(boolean loading) {
+        private void setLoading(boolean loading) {
             this.loading = loading;
             notifyDataSetChanged();
         }

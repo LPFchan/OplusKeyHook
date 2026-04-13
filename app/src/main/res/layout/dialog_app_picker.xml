@@ -9,6 +9,7 @@
         android:id="@+id/editAppSearch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:contentDescription="@string/label_search_apps"
         android:hint="@string/hint_search_apps"
         android:imeOptions="actionSearch"
         android:inputType="text" />

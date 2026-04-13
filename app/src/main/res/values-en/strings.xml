@@ -32,9 +32,11 @@
     <string name="dialog_title_select_activity">Select activity</string>
     <string name="label_user_apps">User apps</string>
     <string name="label_system_apps">System apps</string>
+    <string name="label_search_apps">Search apps</string>
     <string name="loading_apps">Scanning installed apps…</string>
     <string name="loading_activities">Scanning activities…</string>
     <string name="no_apps_found">No available apps found</string>
     <string name="no_activities_found">No available activities found</string>
     <string name="not_selected">Not selected</string>
+    <string name="content_description_app_icon">%1$s icon</string>
 </resources>
