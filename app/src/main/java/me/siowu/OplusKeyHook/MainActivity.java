@@ -5,17 +5,26 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,7 +36,6 @@ import java.io.InputStreamReader;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TYPE_NONE = "none";
     private static final String TYPE_COMMON = "common";
+    private static final String TYPE_OPEN_APP = "open_app";
     private static final String TYPE_XIAOBU_SHORTCUT = "xiaobu_shortcut";
     private static final String TYPE_CUSTOM_ACTIVITY = "custom_activity";
     private static final String TYPE_CUSTOM_URL_SCHEME = "custom_url_scheme";
@@ -45,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private Spinner spinnerGesture;
     private Spinner spinnerType;
     private Spinner spinnerCommon;
-    private Spinner spinnerApp;
-    private Spinner spinnerActivity;
+    private Button btnSelectApp;
+    private Button btnSelectActivity;
     private EditText editUrlScheme;
     private EditText editxiaobuShortcuts;
     private EditText editShell;
@@ -54,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView textSelectedActivity;
     private LinearLayout layoutCommon;
     private LinearLayout layoutCustomActivity;
+    private LinearLayout layoutActivitySelection;
     private LinearLayout layoutUrlScheme;
     private LinearLayout layoutxiaobuShortcuts;
     private LinearLayout layoutShell;
@@ -62,14 +72,21 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox checkboxExecuteWhenScreenOff;
 
     private final List<AppOption> appOptions = new ArrayList<>();
+    private final List<AppOption> filteredAppOptions = new ArrayList<>();
     private final List<ActivityOption> activityOptions = new ArrayList<>();
-    private ArrayAdapter<String> appAdapter;
-    private ArrayAdapter<String> activityAdapter;
 
     private String selectedPackageName = "";
     private String selectedActivityName = "";
-    private boolean suppressNextAppSelectionEvent = false;
-    private boolean suppressNextActivitySelectionEvent = false;
+    private String loadedActivityPackageName = "";
+
+    private AlertDialog appPickerDialog;
+    private AlertDialog activityPickerDialog;
+    private AppListAdapter appListAdapter;
+    private ActivityListAdapter activityListAdapter;
+    private EditText editAppSearch;
+    private RadioGroup radioAppFilter;
+    private TextView textAppPickerStatus;
+    private TextView textActivityPickerStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,8 +106,8 @@ public class MainActivity extends AppCompatActivity {
         spinnerGesture = findViewById(R.id.spinnerGesture);
         spinnerType = findViewById(R.id.spinnerType);
         spinnerCommon = findViewById(R.id.spinnerCommon);
-        spinnerApp = findViewById(R.id.spinnerApp);
-        spinnerActivity = findViewById(R.id.spinnerActivity);
+        btnSelectApp = findViewById(R.id.btnSelectApp);
+        btnSelectActivity = findViewById(R.id.btnSelectActivity);
         editUrlScheme = findViewById(R.id.editUrlScheme);
         editxiaobuShortcuts = findViewById(R.id.editxiaobuShortcuts);
         editShell = findViewById(R.id.editShell);
@@ -98,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         textSelectedActivity = findViewById(R.id.textSelectedActivity);
         layoutCommon = findViewById(R.id.layoutCommon);
         layoutCustomActivity = findViewById(R.id.layoutCustomActivity);
+        layoutActivitySelection = findViewById(R.id.layoutActivitySelection);
         layoutUrlScheme = findViewById(R.id.layoutUrlScheme);
         layoutxiaobuShortcuts = findViewById(R.id.layoutxiaobuShortcuts);
         layoutShell = findViewById(R.id.layoutShell);
@@ -106,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
 
         setupStaticSpinners();
-        setupCustomActivitySpinners();
+        setupSelectionButtons();
 
         spinnerGesture.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -132,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnSave.setOnClickListener(v -> saveConfig());
 
-        loadInstalledApps();
+        loadInstalledApps(false, null);
         loadGestureConfig(0);
     }
 
@@ -162,82 +180,16 @@ public class MainActivity extends AppCompatActivity {
         spinnerCommon.setAdapter(adapterCommon);
     }
 
-    private void setupCustomActivitySpinners() {
-        appAdapter = createSpinnerAdapter(Collections.singletonList(getString(R.string.loading_apps)));
-        activityAdapter = createSpinnerAdapter(Collections.singletonList(getString(R.string.prompt_select_activity)));
-        spinnerApp.setAdapter(appAdapter);
-        spinnerActivity.setAdapter(activityAdapter);
-
-        spinnerApp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (suppressNextAppSelectionEvent) {
-                    suppressNextAppSelectionEvent = false;
-                    return;
-                }
-
-                if (position <= 0) {
-                    if (position == 0) {
-                        selectedPackageName = "";
-                        selectedActivityName = "";
-                        updateCustomActivitySummary();
-                        updateActivitySpinner(Collections.singletonList(getString(R.string.prompt_select_activity)));
-                    }
-                    return;
-                }
-
-                AppOption selectedApp = appOptions.get(position - 1);
-                if (!TextUtils.equals(selectedPackageName, selectedApp.packageName)) {
-                    selectedPackageName = selectedApp.packageName;
-                    selectedActivityName = "";
-                    updateCustomActivitySummary();
-                    loadActivitiesForPackage(selectedApp.packageName);
-                } else if (activityOptions.isEmpty()) {
-                    loadActivitiesForPackage(selectedApp.packageName);
-                }
+    private void setupSelectionButtons() {
+        btnSelectApp.setOnClickListener(v -> showAppPickerDialog());
+        btnSelectActivity.setOnClickListener(v -> {
+            if (TextUtils.isEmpty(selectedPackageName)) {
+                Toast.makeText(this, R.string.prompt_select_app, Toast.LENGTH_SHORT).show();
+                return;
             }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+            showActivityPickerDialog();
         });
-
-        spinnerActivity.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (suppressNextActivitySelectionEvent) {
-                    suppressNextActivitySelectionEvent = false;
-                    return;
-                }
-
-                if (position <= 0) {
-                    if (position == 0) {
-                        selectedActivityName = "";
-                        updateCustomActivitySummary();
-                    }
-                    return;
-                }
-
-                selectedActivityName = activityOptions.get(position - 1).className;
-                updateCustomActivitySummary();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-        updateCustomActivitySummary();
-    }
-
-    private ArrayAdapter<String> createSpinnerAdapter(List<String> values) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                new ArrayList<>(values)
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        return adapter;
+        updateSelectionViews();
     }
 
     private void loadGestureConfig(int gesture) {
@@ -255,8 +207,9 @@ public class MainActivity extends AppCompatActivity {
         checkboxVibrate.setChecked(SPUtils.getBoolean(prefix + "vibrate", true));
         checkboxExecuteWhenScreenOff.setChecked(SPUtils.getBoolean(prefix + "screen_off", true));
 
-        updateCustomActivitySummary();
-        restoreAppSelection();
+        loadedActivityPackageName = "";
+        activityOptions.clear();
+        updateSelectionViews();
         updateLayout(spinnerType.getSelectedItemPosition());
     }
 
@@ -288,8 +241,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void loadInstalledApps() {
-        updateAppSpinner(Collections.singletonList(getString(R.string.loading_apps)));
+    private void loadInstalledApps(boolean forceRefresh, Runnable onComplete) {
+        if (!forceRefresh && !appOptions.isEmpty()) {
+            if (onComplete != null) {
+                onComplete.run();
+            }
+            return;
+        }
+
+        updateAppPickerStatus(getString(R.string.loading_apps), true);
         new Thread(() -> {
             List<AppOption> options = new ArrayList<>();
             PackageManager packageManager = getPackageManager();
@@ -303,7 +263,10 @@ public class MainActivity extends AppCompatActivity {
                     if (label.isEmpty()) {
                         label = packageName;
                     }
-                    options.add(new AppOption(label, packageName));
+                    Drawable icon = applicationInfo.loadIcon(packageManager);
+                    boolean systemApp = isSystemApp(applicationInfo);
+                    boolean launchable = packageManager.getLaunchIntentForPackage(packageName) != null;
+                    options.add(new AppOption(label, packageName, icon, systemApp, launchable));
                 }
             } catch (Exception e) {
                 Log.e("MainActivity", "loadInstalledApps", e);
@@ -320,20 +283,36 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 appOptions.clear();
                 appOptions.addAll(options);
-                updateAppSpinner(buildAppEntries(options));
-                restoreAppSelection();
+                updateSelectionViews();
+                applyAppPickerFilter();
+                if (onComplete != null) {
+                    onComplete.run();
+                }
             });
         }).start();
     }
 
-    private void loadActivitiesForPackage(String packageName) {
+    private void loadActivitiesForPackage(String packageName, boolean forceRefresh, Runnable onComplete) {
         if (TextUtils.isEmpty(packageName)) {
+            loadedActivityPackageName = "";
             activityOptions.clear();
-            updateActivitySpinner(Collections.singletonList(getString(R.string.prompt_select_activity)));
+            updateSelectionViews();
+            updateActivityPickerItems();
+            if (onComplete != null) {
+                onComplete.run();
+            }
             return;
         }
 
-        updateActivitySpinner(Collections.singletonList(getString(R.string.loading_activities)));
+        if (!forceRefresh && TextUtils.equals(loadedActivityPackageName, packageName)) {
+            updateActivityPickerItems();
+            if (onComplete != null) {
+                onComplete.run();
+            }
+            return;
+        }
+
+        updateActivityPickerStatus(getString(R.string.loading_activities), true);
         new Thread(() -> {
             List<ActivityOption> options = new ArrayList<>();
             PackageManager packageManager = getPackageManager();
@@ -365,11 +344,14 @@ public class MainActivity extends AppCompatActivity {
                 if (!TextUtils.equals(selectedPackageName, packageName)) {
                     return;
                 }
-
+                loadedActivityPackageName = packageName;
                 activityOptions.clear();
                 activityOptions.addAll(options);
-                updateActivitySpinner(buildActivityEntries(options));
-                restoreActivitySelection();
+                updateSelectionViews();
+                updateActivityPickerItems();
+                if (onComplete != null) {
+                    onComplete.run();
+                }
             });
         }).start();
     }
@@ -388,91 +370,216 @@ public class MainActivity extends AppCompatActivity {
         return packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
     }
 
-    private void restoreAppSelection() {
-        if (appAdapter == null) {
+    private void showAppPickerDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_app_picker, null, false);
+        editAppSearch = dialogView.findViewById(R.id.editAppSearch);
+        radioAppFilter = dialogView.findViewById(R.id.radioAppFilter);
+        Button btnRefreshApps = dialogView.findViewById(R.id.btnRefreshApps);
+        ListView listViewApps = dialogView.findViewById(R.id.listViewApps);
+        textAppPickerStatus = dialogView.findViewById(R.id.textAppPickerStatus);
+
+        appListAdapter = new AppListAdapter();
+        listViewApps.setAdapter(appListAdapter);
+        listViewApps.setOnItemClickListener((parent, view, position, id) -> {
+            AppOption option = filteredAppOptions.get(position);
+            selectedPackageName = option.packageName;
+            selectedActivityName = "";
+            loadedActivityPackageName = "";
+            activityOptions.clear();
+            updateSelectionViews();
+            if (activityPickerDialog != null) {
+                activityPickerDialog.dismiss();
+            }
+            if (appPickerDialog != null) {
+                appPickerDialog.dismiss();
+            }
+            if (TYPE_CUSTOM_ACTIVITY.equals(getSelectedTypeValue())) {
+                loadActivitiesForPackage(selectedPackageName, false, null);
+            }
+        });
+
+        editAppSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                applyAppPickerFilter();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        AppOption selectedApp = findAppOption(selectedPackageName);
+        if (selectedApp != null && selectedApp.systemApp) {
+            radioAppFilter.check(R.id.radioSystemApps);
+        } else {
+            radioAppFilter.check(R.id.radioUserApps);
+        }
+        radioAppFilter.setOnCheckedChangeListener((group, checkedId) -> applyAppPickerFilter());
+        btnRefreshApps.setOnClickListener(v -> loadInstalledApps(true, null));
+
+        appPickerDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_title_select_app)
+                .setView(dialogView)
+                .setNegativeButton(R.string.action_confirm, null)
+                .create();
+        appPickerDialog.setOnDismissListener(dialog -> {
+            appPickerDialog = null;
+            appListAdapter = null;
+            editAppSearch = null;
+            radioAppFilter = null;
+            textAppPickerStatus = null;
+            filteredAppOptions.clear();
+        });
+        appPickerDialog.show();
+
+        loadInstalledApps(false, this::applyAppPickerFilter);
+    }
+
+    private void showActivityPickerDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_activity_picker, null, false);
+        Button btnRefreshActivities = dialogView.findViewById(R.id.btnRefreshActivities);
+        ListView listViewActivities = dialogView.findViewById(R.id.listViewActivities);
+        textActivityPickerStatus = dialogView.findViewById(R.id.textActivityPickerStatus);
+
+        activityListAdapter = new ActivityListAdapter();
+        listViewActivities.setAdapter(activityListAdapter);
+        listViewActivities.setOnItemClickListener((parent, view, position, id) -> {
+            selectedActivityName = activityOptions.get(position).className;
+            updateSelectionViews();
+            if (activityPickerDialog != null) {
+                activityPickerDialog.dismiss();
+            }
+        });
+
+        btnRefreshActivities.setOnClickListener(v -> loadActivitiesForPackage(selectedPackageName, true, null));
+
+        activityPickerDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_title_select_activity)
+                .setView(dialogView)
+                .setNegativeButton(R.string.action_confirm, null)
+                .create();
+        activityPickerDialog.setOnDismissListener(dialog -> {
+            activityPickerDialog = null;
+            activityListAdapter = null;
+            textActivityPickerStatus = null;
+        });
+        activityPickerDialog.show();
+
+        loadActivitiesForPackage(selectedPackageName, false, null);
+    }
+
+    private void applyAppPickerFilter() {
+        if (appListAdapter == null) {
             return;
         }
 
-        int selection = 0;
-        if (!TextUtils.isEmpty(selectedPackageName)) {
-            for (int i = 0; i < appOptions.size(); i++) {
-                if (TextUtils.equals(appOptions.get(i).packageName, selectedPackageName)) {
-                    selection = i + 1;
-                    break;
+        String query = editAppSearch == null ? "" : editAppSearch.getText().toString().trim().toLowerCase(Locale.ROOT);
+        boolean showSystemApps = radioAppFilter != null && radioAppFilter.getCheckedRadioButtonId() == R.id.radioSystemApps;
+        boolean launchableOnly = TYPE_OPEN_APP.equals(getSelectedTypeValue());
+
+        filteredAppOptions.clear();
+        for (AppOption option : appOptions) {
+            if (option.systemApp != showSystemApps) {
+                continue;
+            }
+            if (launchableOnly && !option.launchable) {
+                continue;
+            }
+            if (!query.isEmpty()) {
+                String lowerLabel = option.label.toLowerCase(Locale.ROOT);
+                String lowerPackage = option.packageName.toLowerCase(Locale.ROOT);
+                if (!lowerLabel.contains(query) && !lowerPackage.contains(query)) {
+                    continue;
                 }
             }
+            filteredAppOptions.add(option);
         }
 
-        if (spinnerApp.getSelectedItemPosition() != selection) {
-            suppressNextAppSelectionEvent = true;
-            spinnerApp.setSelection(selection);
-        }
-
-        if (selection > 0 || !TextUtils.isEmpty(selectedPackageName)) {
-            loadActivitiesForPackage(selectedPackageName);
-        } else {
-            activityOptions.clear();
-            updateActivitySpinner(Collections.singletonList(getString(R.string.prompt_select_activity)));
-        }
+        appListAdapter.notifyDataSetChanged();
+        updateAppPickerStatus(filteredAppOptions.isEmpty() ? getString(R.string.no_apps_found) : "", false);
     }
 
-    private void restoreActivitySelection() {
-        int selection = 0;
-        if (!TextUtils.isEmpty(selectedActivityName)) {
-            for (int i = 0; i < activityOptions.size(); i++) {
-                if (TextUtils.equals(activityOptions.get(i).className, selectedActivityName)) {
-                    selection = i + 1;
-                    break;
-                }
+    private void updateActivityPickerItems() {
+        if (activityListAdapter != null) {
+            activityListAdapter.notifyDataSetChanged();
+        }
+        updateActivityPickerStatus(activityOptions.isEmpty() ? getString(R.string.no_activities_found) : "", false);
+    }
+
+    private void updateSelectionViews() {
+        AppOption selectedApp = findAppOption(selectedPackageName);
+        btnSelectApp.setText(selectedApp == null
+                ? (TextUtils.isEmpty(selectedPackageName) ? getString(R.string.prompt_select_app) : selectedPackageName)
+                : selectedApp.label);
+
+        ActivityOption selectedActivity = findActivityOption(selectedActivityName);
+        btnSelectActivity.setText(selectedActivity == null
+                ? (TextUtils.isEmpty(selectedActivityName) ? getString(R.string.prompt_select_activity) : selectedActivityName)
+                : selectedActivity.label);
+        btnSelectActivity.setEnabled(!TextUtils.isEmpty(selectedPackageName));
+
+        textSelectedPackage.setText(TextUtils.isEmpty(selectedPackageName)
+                ? getString(R.string.not_selected)
+                : selectedPackageName);
+        textSelectedActivity.setText(TextUtils.isEmpty(selectedActivityName)
+                ? getString(R.string.not_selected)
+                : selectedActivityName);
+    }
+
+    private AppOption findAppOption(String packageName) {
+        if (TextUtils.isEmpty(packageName)) {
+            return null;
+        }
+        for (AppOption option : appOptions) {
+            if (TextUtils.equals(option.packageName, packageName)) {
+                return option;
             }
         }
+        return null;
+    }
 
-        if (spinnerActivity.getSelectedItemPosition() != selection) {
-            suppressNextActivitySelectionEvent = true;
-            spinnerActivity.setSelection(selection);
-        } else {
-            updateCustomActivitySummary();
+    private ActivityOption findActivityOption(String className) {
+        if (TextUtils.isEmpty(className)) {
+            return null;
+        }
+        for (ActivityOption option : activityOptions) {
+            if (TextUtils.equals(option.className, className)) {
+                return option;
+            }
+        }
+        return null;
+    }
+
+    private boolean isSystemApp(ApplicationInfo applicationInfo) {
+        return (applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0
+                || (applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0;
+    }
+
+    private void updateAppPickerStatus(String message, boolean loading) {
+        if (textAppPickerStatus == null) {
+            return;
+        }
+        textAppPickerStatus.setVisibility(TextUtils.isEmpty(message) ? View.GONE : View.VISIBLE);
+        textAppPickerStatus.setText(message);
+        if (appListAdapter != null) {
+            appListAdapter.setLoading(loading);
         }
     }
 
-    private void updateAppSpinner(List<String> items) {
-        replaceAdapterItems(appAdapter, items);
-    }
-
-    private void updateActivitySpinner(List<String> items) {
-        replaceAdapterItems(activityAdapter, items);
-    }
-
-    private void replaceAdapterItems(ArrayAdapter<String> adapter, List<String> items) {
-        adapter.clear();
-        adapter.addAll(items);
-        adapter.notifyDataSetChanged();
-    }
-
-    private List<String> buildAppEntries(List<AppOption> options) {
-        List<String> items = new ArrayList<>();
-        items.add(getString(R.string.prompt_select_app));
-        if (options.isEmpty()) {
-            items.add(getString(R.string.no_apps_found));
-            return items;
+    private void updateActivityPickerStatus(String message, boolean loading) {
+        if (textActivityPickerStatus == null) {
+            return;
         }
-        for (AppOption option : options) {
-            items.add(option.label + " (" + option.packageName + ")");
+        textActivityPickerStatus.setVisibility(TextUtils.isEmpty(message) ? View.GONE : View.VISIBLE);
+        textActivityPickerStatus.setText(message);
+        if (activityListAdapter != null) {
+            activityListAdapter.setLoading(loading);
         }
-        return items;
-    }
-
-    private List<String> buildActivityEntries(List<ActivityOption> options) {
-        List<String> items = new ArrayList<>();
-        items.add(getString(R.string.prompt_select_activity));
-        if (options.isEmpty()) {
-            items.add(getString(R.string.no_activities_found));
-            return items;
-        }
-        for (ActivityOption option : options) {
-            items.add(option.label);
-        }
-        return items;
     }
 
     private String buildActivityLabel(CharSequence label, String className) {
@@ -491,15 +598,6 @@ public class MainActivity extends AppCompatActivity {
             return packageName + className;
         }
         return className;
-    }
-
-    private void updateCustomActivitySummary() {
-        textSelectedPackage.setText(TextUtils.isEmpty(selectedPackageName)
-                ? getString(R.string.not_selected)
-                : selectedPackageName);
-        textSelectedActivity.setText(TextUtils.isEmpty(selectedActivityName)
-                ? getString(R.string.not_selected)
-                : selectedActivityName);
     }
 
     private String getPrefix(int gesture) {
@@ -524,18 +622,21 @@ public class MainActivity extends AppCompatActivity {
             case TYPE_COMMON:
             case "常用功能":
                 return 1;
+            case TYPE_OPEN_APP:
+            case "打开应用":
+                return 2;
             case TYPE_XIAOBU_SHORTCUT:
             case "执行小布快捷指令":
-                return 2;
+                return 3;
             case TYPE_CUSTOM_ACTIVITY:
             case "自定义Activity":
-                return 3;
+                return 4;
             case TYPE_CUSTOM_URL_SCHEME:
             case "自定义UrlScheme":
-                return 4;
+                return 5;
             case TYPE_CUSTOM_SHELL:
             case "自定义Shell命令":
-                return 5;
+                return 6;
             default:
                 return 0;
         }
@@ -546,12 +647,14 @@ public class MainActivity extends AppCompatActivity {
             case 1:
                 return TYPE_COMMON;
             case 2:
-                return TYPE_XIAOBU_SHORTCUT;
+                return TYPE_OPEN_APP;
             case 3:
-                return TYPE_CUSTOM_ACTIVITY;
+                return TYPE_XIAOBU_SHORTCUT;
             case 4:
-                return TYPE_CUSTOM_URL_SCHEME;
+                return TYPE_CUSTOM_ACTIVITY;
             case 5:
+                return TYPE_CUSTOM_URL_SCHEME;
+            case 6:
                 return TYPE_CUSTOM_SHELL;
             default:
                 return TYPE_NONE;
@@ -561,6 +664,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateLayout(int pos) {
         layoutCommon.setVisibility(View.GONE);
         layoutCustomActivity.setVisibility(View.GONE);
+        layoutActivitySelection.setVisibility(View.GONE);
         layoutUrlScheme.setVisibility(View.GONE);
         layoutxiaobuShortcuts.setVisibility(View.GONE);
         layoutShell.setVisibility(View.GONE);
@@ -570,15 +674,19 @@ public class MainActivity extends AppCompatActivity {
                 layoutCommon.setVisibility(View.VISIBLE);
                 break;
             case 2:
-                layoutxiaobuShortcuts.setVisibility(View.VISIBLE);
-                break;
-            case 3:
                 layoutCustomActivity.setVisibility(View.VISIBLE);
                 break;
+            case 3:
+                layoutxiaobuShortcuts.setVisibility(View.VISIBLE);
+                break;
             case 4:
-                layoutUrlScheme.setVisibility(View.VISIBLE);
+                layoutCustomActivity.setVisibility(View.VISIBLE);
+                layoutActivitySelection.setVisibility(View.VISIBLE);
                 break;
             case 5:
+                layoutUrlScheme.setVisibility(View.VISIBLE);
+                break;
+            case 6:
                 layoutShell.setVisibility(View.VISIBLE);
                 break;
             default:
@@ -623,13 +731,131 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private final class AppListAdapter extends BaseAdapter {
+        private boolean loading;
+
+        @Override
+        public int getCount() {
+            return loading ? 0 : filteredAppOptions.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return filteredAppOptions.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        void setLoading(boolean loading) {
+            this.loading = loading;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {
+                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_app, parent, false);
+                holder = new ViewHolder(
+                        convertView.findViewById(R.id.imageAppIcon),
+                        convertView.findViewById(R.id.textAppLabel),
+                        convertView.findViewById(R.id.textAppPackage)
+                );
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            AppOption option = filteredAppOptions.get(position);
+            holder.icon.setImageDrawable(option.icon);
+            holder.label.setText(option.label);
+            holder.detail.setText(option.packageName);
+            return convertView;
+        }
+    }
+
+    private final class ActivityListAdapter extends BaseAdapter {
+        private boolean loading;
+
+        @Override
+        public int getCount() {
+            return loading ? 0 : activityOptions.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return activityOptions.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        void setLoading(boolean loading) {
+            this.loading = loading;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ActivityViewHolder holder;
+            if (convertView == null) {
+                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_activity, parent, false);
+                holder = new ActivityViewHolder(
+                        convertView.findViewById(R.id.textActivityLabel),
+                        convertView.findViewById(R.id.textActivityClass)
+                );
+                convertView.setTag(holder);
+            } else {
+                holder = (ActivityViewHolder) convertView.getTag();
+            }
+
+            ActivityOption option = activityOptions.get(position);
+            holder.label.setText(option.label);
+            holder.detail.setText(option.className);
+            return convertView;
+        }
+    }
+
+    private static final class ViewHolder {
+        private final ImageView icon;
+        private final TextView label;
+        private final TextView detail;
+
+        private ViewHolder(ImageView icon, TextView label, TextView detail) {
+            this.icon = icon;
+            this.label = label;
+            this.detail = detail;
+        }
+    }
+
+    private static final class ActivityViewHolder {
+        private final TextView label;
+        private final TextView detail;
+
+        private ActivityViewHolder(TextView label, TextView detail) {
+            this.label = label;
+            this.detail = detail;
+        }
+    }
+
     private static final class AppOption {
         private final String label;
         private final String packageName;
+        private final Drawable icon;
+        private final boolean systemApp;
+        private final boolean launchable;
 
-        private AppOption(String label, String packageName) {
+        private AppOption(String label, String packageName, Drawable icon, boolean systemApp, boolean launchable) {
             this.label = label;
             this.packageName = packageName;
+            this.icon = icon;
+            this.systemApp = systemApp;
+            this.launchable = launchable;
         }
     }
 

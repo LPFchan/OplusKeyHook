@@ -14,6 +14,7 @@
     <string-array name="type_options">
         <item>无</item>
         <item>常用功能</item>
+        <item>打开应用</item>
         <item>执行小布快捷指令</item>
         <item>自定义Activity</item>
         <item>自定义UrlScheme</item>

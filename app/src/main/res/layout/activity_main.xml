@@ -69,23 +69,48 @@
                 android:layout_height="wrap_content"
                 android:text="@string/label_app" />
 
-            <Spinner
-                android:id="@+id/spinnerApp"
+            <Button
+                android:id="@+id/btnSelectApp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:spinnerMode="dialog" />
+                android:text="@string/prompt_select_app"
+                android:textAllCaps="false" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/label_activity" />
-
-            <Spinner
-                android:id="@+id/spinnerActivity"
+            <LinearLayout
+                android:id="@+id/layoutActivitySelection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:spinnerMode="dialog" />
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/label_activity" />
+
+                <Button
+                    android:id="@+id/btnSelectActivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prompt_select_activity"
+                    android:textAllCaps="false" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/label_selected_activity" />
+
+                <TextView
+                    android:id="@+id/textSelectedActivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/not_selected"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -102,20 +127,6 @@
                 android:textColor="?android:attr/textColorSecondary"
                 android:textSize="12sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/label_selected_activity" />
-
-            <TextView
-                android:id="@+id/textSelectedActivity"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/not_selected"
-                android:textColor="?android:attr/textColorSecondary"
-                android:textSize="12sp" />
         </LinearLayout>
 
         <!-- 自定义 URL Scheme -->

@@ -8,6 +8,7 @@
     <string-array name="type_options">
         <item>None</item>
         <item>Common action</item>
+        <item>Open app</item>
         <item>Run Breeno shortcut</item>
         <item>Custom activity</item>
         <item>Custom URL scheme</item>

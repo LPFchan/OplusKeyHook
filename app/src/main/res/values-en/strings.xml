@@ -13,9 +13,11 @@
     <string name="label_vibrate_feedback">Enable vibration feedback</string>
     <string name="label_execute_when_screen_off">Run while the screen is off</string>
     <string name="action_save">Save settings</string>
+    <string name="action_refresh">Refresh list</string>
     <string name="hint_url_scheme">Example: weixin://</string>
     <string name="hint_xiaobu_shortcut_id">Paste the captured ID here</string>
     <string name="hint_shell_command">Enter the command to execute</string>
+    <string name="hint_search_apps">Search app name or package</string>
     <string name="message_activate_module_first">Please activate the module first</string>
     <string name="message_saved">Saved (takes effect in 3 seconds)</string>
     <string name="message_root_granted">Root permission granted</string>
@@ -26,6 +28,10 @@
     <string name="action_confirm">OK</string>
     <string name="prompt_select_app">Select an app</string>
     <string name="prompt_select_activity">Select an activity</string>
+    <string name="dialog_title_select_app">Select app</string>
+    <string name="dialog_title_select_activity">Select activity</string>
+    <string name="label_user_apps">User apps</string>
+    <string name="label_system_apps">System apps</string>
     <string name="loading_apps">Scanning installed apps…</string>
     <string name="loading_activities">Scanning activities…</string>
     <string name="no_apps_found">No available apps found</string>
