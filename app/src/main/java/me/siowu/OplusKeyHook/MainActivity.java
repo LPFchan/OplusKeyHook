@@ -406,15 +406,9 @@ public class MainActivity extends AppCompatActivity {
         if (spinnerApp.getSelectedItemPosition() != selection) {
             suppressNextAppSelectionEvent = true;
             spinnerApp.setSelection(selection);
-            if (selection > 0 || !TextUtils.isEmpty(selectedPackageName)) {
-                loadActivitiesForPackage(selectedPackageName);
-            } else {
-                activityOptions.clear();
-                updateActivitySpinner(Collections.singletonList(getString(R.string.prompt_select_activity)));
-            }
-        } else if (selection > 0) {
-            loadActivitiesForPackage(selectedPackageName);
-        } else if (!TextUtils.isEmpty(selectedPackageName)) {
+        }
+
+        if (selection > 0 || !TextUtils.isEmpty(selectedPackageName)) {
             loadActivitiesForPackage(selectedPackageName);
         } else {
             activityOptions.clear();
@@ -517,6 +511,7 @@ public class MainActivity extends AppCompatActivity {
             case 2:
                 return "long_";
             default:
+                Log.w("MainActivity", "Unexpected gesture index: " + gesture);
                 return "single_";
         }
     }
