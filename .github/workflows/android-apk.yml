@@ -1,0 +1,90 @@
+name: Android APK
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build release APK
+        run: ./gradlew --no-daemon :app:assembleRelease
+
+      - name: Sign release APK
+        id: sign_apk
+        if: ${{ secrets.ANDROID_SIGNING_KEY != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Prepare release artifact
+        id: prepare_apk
+        shell: bash
+        run: |
+          if [[ -n "${{ steps.sign_apk.outputs.signedReleaseFile }}" ]]; then
+            SOURCE_APK="${{ steps.sign_apk.outputs.signedReleaseFile }}"
+          else
+            SOURCE_APK="app/build/outputs/apk/release/app-release-unsigned.apk"
+          fi
+
+          VERSION="$(./gradlew --no-daemon -q :app:printVersionName)"
+          OUTPUT_NAME="OplusKeyHook-v${VERSION}.apk"
+          cp "$SOURCE_APK" "$RUNNER_TEMP/$OUTPUT_NAME"
+          echo "artifact_path=$RUNNER_TEMP/$OUTPUT_NAME" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=$OUTPUT_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.prepare_apk.outputs.artifact_name }}
+          path: ${{ steps.prepare_apk.outputs.artifact_path }}
+
+  release:
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-artifacts/**/*.apk
+          generate_release_notes: true
+          make_latest: true
