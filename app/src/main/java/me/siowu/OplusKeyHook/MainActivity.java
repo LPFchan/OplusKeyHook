@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (position <= 0 || position - 1 >= appOptions.size()) {
+                if (position <= 0) {
                     if (position == 0) {
                         selectedPackageName = "";
                         selectedActivityName = "";
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (position <= 0 || position - 1 >= activityOptions.size()) {
+                if (position <= 0) {
                     if (position == 0) {
                         selectedActivityName = "";
                         updateCustomActivitySummary();
