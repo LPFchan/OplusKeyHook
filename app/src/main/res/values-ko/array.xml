@@ -8,6 +8,7 @@
     <string-array name="type_options">
         <item>없음</item>
         <item>자주 쓰는 기능</item>
+        <item>앱 열기</item>
         <item>Breeno 단축 명령 실행</item>
         <item>사용자 지정 Activity</item>
         <item>사용자 지정 URL 스킴</item>
