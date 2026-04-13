@@ -483,7 +483,10 @@ public class MainActivity extends AppCompatActivity {
 
         filteredAppOptions.clear();
         for (AppOption option : appOptions) {
-            if (option.systemApp != showSystemApps) {
+            if (showSystemApps && !option.systemApp) {
+                continue;
+            }
+            if (!showSystemApps && option.systemApp) {
                 continue;
             }
             if (launchableOnly && !isLaunchableApp(option)) {
