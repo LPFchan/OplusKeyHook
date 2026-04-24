@@ -11,15 +11,19 @@
     <string name="label_url_scheme">URL scheme</string>
     <string name="label_xiaobu_shortcut_id">Breeno shortcut ID</string>
     <string name="label_shell_command">Shell command</string>
+    <string name="label_action_type">Action type</string>
     <string name="label_behavior">Behavior</string>
     <string name="label_vibrate_feedback">Enable vibration feedback</string>
+    <string name="label_vibrate_feedback_desc">Vibrate when the shortcut key is triggered</string>
     <string name="label_execute_when_screen_off">Run while the screen is off</string>
+    <string name="label_execute_when_screen_off_desc">Allow the shortcut key to trigger when the screen is off</string>
     <string name="action_save">Save settings</string>
     <string name="action_refresh">Refresh list</string>
     <string name="hint_url_scheme">Example: weixin://</string>
     <string name="hint_xiaobu_shortcut_id">Paste the captured ID here</string>
     <string name="hint_shell_command">Enter the command to execute</string>
     <string name="hint_search_apps">Search app name or package</string>
+    <string name="hint_search_activities">Search activity label or class</string>
     <string name="message_activate_module_first">Please activate the module first</string>
     <string name="message_saved">Saved (takes effect in 3 seconds)</string>
     <string name="message_root_granted">Root permission granted</string>
@@ -35,6 +39,7 @@
     <string name="label_user_apps">User apps</string>
     <string name="label_system_apps">System apps</string>
     <string name="label_search_apps">Search apps</string>
+    <string name="label_search_activities">Search activities</string>
     <string name="loading_apps">Scanning installed apps…</string>
     <string name="loading_activities">Scanning activities…</string>
     <string name="no_apps_found">No available apps found</string>

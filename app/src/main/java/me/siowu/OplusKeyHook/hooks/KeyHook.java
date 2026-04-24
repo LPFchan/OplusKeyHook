@@ -1,6 +1,5 @@
 package me.siowu.OplusKeyHook.hooks;
 
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -24,13 +23,15 @@ import de.robv.android.xposed.XposedHelpers;
 public class KeyHook {
 
     XSharedPreferences sp = null;
-    private long lastDownTime = 0;
-    private long lastUpTime = 0;
+    private final Object gestureLock = new Object();
+    private long pressSequence = 0;
+    private long singleSequence = 0;
+    private long firstTapUpTime = 0;
     private int clickCount = 0;
-    private boolean isLongPress = false;
+    private boolean keyDown = false;
+    private boolean longPressTriggered = false;
     private static final long DOUBLE_CLICK_DELAY = 300;
     private static final long LONG_PRESS_TIME = 495;
-    private static Context systemContext;
 
     public void handleLoadPackage(LoadPackageParam lpparam) {
 
@@ -60,18 +61,33 @@ public class KeyHook {
                             Object currentStrategy = param.thisObject;
 
                             if (keyCode == 780) {
-                                long now = System.currentTimeMillis();
-                                // 🔽=== 按下事件 ACTION_DOWN ===🔽
                                 if (event.getAction() == KeyEvent.ACTION_DOWN && down) {
-                                    lastDownTime = now;
-                                    isLongPress = false;
-                                    // 启动一个判定长按的线程
+                                    if (event.getRepeatCount() > 0) {
+                                        param.setResult(null);
+                                        return;
+                                    }
+                                    final long currentPressId;
+                                    synchronized (gestureLock) {
+                                        keyDown = true;
+                                        longPressTriggered = false;
+                                        pressSequence++;
+                                        currentPressId = pressSequence;
+                                    }
+
                                     new Thread(() -> {
                                         try {
                                             Thread.sleep(LONG_PRESS_TIME);
-                                            // 若超过495ms仍未抬起，则判定为长按
-                                            if (lastUpTime < lastDownTime && !isLongPress) {
-                                                isLongPress = true;
+                                            boolean shouldTriggerLong;
+                                            synchronized (gestureLock) {
+                                                shouldTriggerLong = keyDown && !longPressTriggered && pressSequence == currentPressId;
+                                                if (shouldTriggerLong) {
+                                                    longPressTriggered = true;
+                                                    clickCount = 0;
+                                                    firstTapUpTime = 0;
+                                                    singleSequence++;
+                                                }
+                                            }
+                                            if (shouldTriggerLong) {
                                                 XposedBridge.log("触发长按事件");
                                                 handleClick("long_", interactive, currentStrategy);
                                             }
@@ -83,37 +99,70 @@ public class KeyHook {
                                     return;
                                 }
 
-                                // 🔼=== 抬起事件 ACTION_UP ===🔼
                                 if (event.getAction() == KeyEvent.ACTION_UP && !down) {
-                                    lastUpTime = now;
-                                    // 如果已被长按消耗，不处理短按和双击
-                                    if (isLongPress) {
+                                    boolean consumedByLongPress;
+                                    boolean shouldTriggerDouble = false;
+                                    boolean shouldScheduleSingle = false;
+                                    long scheduledSingleId = 0;
+                                    long now = System.currentTimeMillis();
+
+                                    synchronized (gestureLock) {
+                                        keyDown = false;
+                                        if (longPressTriggered) {
+                                            longPressTriggered = false;
+                                            clickCount = 0;
+                                            firstTapUpTime = 0;
+                                            consumedByLongPress = true;
+                                        } else {
+                                            consumedByLongPress = false;
+                                            if (clickCount == 1 && (now - firstTapUpTime) <= DOUBLE_CLICK_DELAY) {
+                                                clickCount = 0;
+                                                firstTapUpTime = 0;
+                                                singleSequence++;
+                                                shouldTriggerDouble = true;
+                                            } else {
+                                                clickCount = 1;
+                                                firstTapUpTime = now;
+                                                singleSequence++;
+                                                scheduledSingleId = singleSequence;
+                                                shouldScheduleSingle = true;
+                                            }
+                                        }
+                                    }
+
+                                    if (consumedByLongPress) {
                                         param.setResult(null);
                                         return;
                                     }
-                                    clickCount++;
-
-                                    // 判断双击
-                                    if (clickCount == 2 && (now - lastDownTime) < DOUBLE_CLICK_DELAY) {
+                                    if (shouldTriggerDouble) {
                                         XposedBridge.log("触发双击事件");
                                         handleClick("double_", interactive, currentStrategy);
-                                        clickCount = 0;
                                         param.setResult(null);
                                         return;
                                     }
-
-                                    // 如果 250ms 内没有第二次点击，判定为短按
-                                    new Thread(() -> {
-                                        try {
-                                            Thread.sleep(DOUBLE_CLICK_DELAY);
-                                            if (clickCount == 1 && !isLongPress) {
-                                                XposedBridge.log("触发短按事件");
-                                                handleClick("single_", interactive, currentStrategy);
+                                    if (shouldScheduleSingle) {
+                                        final long currentSingleId = scheduledSingleId;
+                                        new Thread(() -> {
+                                            try {
+                                                Thread.sleep(DOUBLE_CLICK_DELAY);
+                                                boolean shouldTriggerSingle;
+                                                synchronized (gestureLock) {
+                                                    shouldTriggerSingle = currentSingleId == singleSequence
+                                                            && clickCount == 1
+                                                            && !longPressTriggered;
+                                                    if (shouldTriggerSingle) {
+                                                        clickCount = 0;
+                                                        firstTapUpTime = 0;
+                                                    }
+                                                }
+                                                if (shouldTriggerSingle) {
+                                                    XposedBridge.log("触发短按事件");
+                                                    handleClick("single_", interactive, currentStrategy);
+                                                }
+                                            } catch (Exception ignored) {
                                             }
-                                            clickCount = 0;
-                                        } catch (Exception ignored) {
-                                        }
-                                    }).start();
+                                        }).start();
+                                    }
                                     param.setResult(null);
                                 }
                             }

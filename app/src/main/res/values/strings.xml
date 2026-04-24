@@ -11,15 +11,19 @@
     <string name="label_url_scheme">URL Scheme</string>
     <string name="label_xiaobu_shortcut_id">小布快捷指令 ID</string>
     <string name="label_shell_command">Shell 命令</string>
+    <string name="label_action_type">选择操作类型</string>
     <string name="label_behavior">行为设置</string>
     <string name="label_vibrate_feedback">是否震动反馈</string>
+    <string name="label_vibrate_feedback_desc">触发快捷键时震动提示</string>
     <string name="label_execute_when_screen_off">息屏状态下是否执行操作</string>
+    <string name="label_execute_when_screen_off_desc">息屏时也可触发快捷键操作</string>
     <string name="action_save">保存设置</string>
     <string name="action_refresh">刷新列表</string>
     <string name="hint_url_scheme">例如：weixin://</string>
     <string name="hint_xiaobu_shortcut_id">抓取 ID 后，粘贴在这里</string>
     <string name="hint_shell_command">输入要执行的命令</string>
     <string name="hint_search_apps">搜索应用名称或包名</string>
+    <string name="hint_search_activities">搜索 Activity 名称或类名</string>
     <string name="message_activate_module_first">请先激活模块</string>
     <string name="message_saved">已保存（3 秒后生效）</string>
     <string name="message_root_granted">已被授予 Root 权限</string>
@@ -35,6 +39,7 @@
     <string name="label_user_apps">用户应用</string>
     <string name="label_system_apps">系统应用</string>
     <string name="label_search_apps">搜索应用</string>
+    <string name="label_search_activities">搜索 Activity</string>
     <string name="loading_apps">正在扫描应用列表…</string>
     <string name="loading_activities">正在扫描 Activity 列表…</string>
     <string name="no_apps_found">未找到可用应用</string>
