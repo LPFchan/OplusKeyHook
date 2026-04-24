@@ -8,11 +8,11 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.transition.AutoTransition;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -21,12 +21,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
@@ -37,6 +37,7 @@ import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
@@ -94,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText editUrlScheme, editxiaobuShortcuts, editShell;
 
     // Layout sections
+    private LinearLayout mainContent;
     private LinearLayout layoutCommon, layoutCustomActivity, layoutActivitySelection;
     private LinearLayout layoutUrlScheme, layoutxiaobuShortcuts, layoutShell;
 
@@ -110,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
     private String selectedPackageName = "";
     private String selectedActivityName = "";
     private String loadedActivityPackageName = "";
+    private String lastSavedConfigSignature = "";
 
     // Picker dialogs
     private Dialog appPickerDialog, activityPickerDialog;
@@ -121,13 +124,6 @@ public class MainActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshApps, swipeRefreshActivities;
     private TextView textAppPickerStatus, textActivityPickerStatus;
 
-    // Auto-save (issue 4)
-    private final Handler autoSaveHandler = new Handler(Looper.getMainLooper());
-    private final Runnable autoSaveRunnable = () -> {
-        hasPendingAutoSave = false;
-        saveConfig();
-    };
-    private boolean hasPendingAutoSave = false;
     private boolean isSyncingConfig = false;
 
     @Override
@@ -138,11 +134,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             SPUtils.init(this);
         } catch (SecurityException e) {
-            runOnUiThread(() -> Toast.makeText(
-                    MainActivity.this,
-                    R.string.message_activate_module_first,
-                    Toast.LENGTH_LONG
-            ).show());
+            Log.e("MainActivity", "SPUtils.init", e);
         }
 
         cardGestureSingle = findViewById(R.id.cardGestureSingle);
@@ -167,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
         editUrlScheme = findViewById(R.id.editUrlScheme);
         editxiaobuShortcuts = findViewById(R.id.editxiaobuShortcuts);
         editShell = findViewById(R.id.editShell);
+        mainContent = findViewById(R.id.mainContent);
         layoutCommon = findViewById(R.id.layoutCommon);
         layoutCustomActivity = findViewById(R.id.layoutCustomActivity);
         layoutActivitySelection = findViewById(R.id.layoutActivitySelection);
@@ -182,39 +175,17 @@ public class MainActivity extends AppCompatActivity {
         setupCommonActionsGrid();
         setupSelectionButtons();
 
-        // Auto-save on text input changes
-        TextWatcher autoSaveWatcher = new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { scheduleAutoSave(); }
-            @Override public void afterTextChanged(Editable s) {}
-        };
-        editUrlScheme.addTextChangedListener(autoSaveWatcher);
-        editxiaobuShortcuts.addTextChangedListener(autoSaveWatcher);
-        editShell.addTextChangedListener(autoSaveWatcher);
+        setupValueCommitSave(editUrlScheme);
+        setupValueCommitSave(editxiaobuShortcuts);
+        setupValueCommitSave(editShell);
 
-        // Auto-save on switch toggles
-        switchVibrate.setOnCheckedChangeListener((btn, checked) -> scheduleAutoSave());
-        switchScreenOff.setOnCheckedChangeListener((btn, checked) -> scheduleAutoSave());
+        switchVibrate.setOnCheckedChangeListener((btn, checked) -> saveConfigFromUser());
+        switchScreenOff.setOnCheckedChangeListener((btn, checked) -> saveConfigFromUser());
 
-        // FAB = save immediately
-        btnSave.setOnClickListener(v -> {
-            autoSaveHandler.removeCallbacks(autoSaveRunnable);
-            hasPendingAutoSave = false;
-            saveConfig();
-        });
+        btnSave.setOnClickListener(v -> saveConfigFromUser());
 
         loadInstalledApps(false, null);
         loadGestureConfig(0);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (hasPendingAutoSave) {
-            autoSaveHandler.removeCallbacks(autoSaveRunnable);
-            hasPendingAutoSave = false;
-            saveConfig();
-        }
     }
 
     // ── Gesture selector (issue 5) ──────────────────────────────────────────
@@ -268,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
                             selectedTypeIndex = pos;
                             actionTypeAdapter.notifyDataSetChanged();
                             updateLayout(selectedTypeIndex);
-                            scheduleAutoSave();
+                            saveConfigFromUser();
                         }
                     }
                 }
@@ -321,22 +292,31 @@ public class MainActivity extends AppCompatActivity {
             View itemView = LayoutInflater.from(this).inflate(R.layout.item_action_type, gridCommonActions, false);
             MaterialCardView card = (MaterialCardView) itemView;
 
+            View cardContent = card.getChildAt(0);
+            ViewGroup.LayoutParams contentParams = cardContent.getLayoutParams();
+            contentParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            cardContent.setLayoutParams(contentParams);
+
             card.findViewById(R.id.textActionTypeIcon).setVisibility(View.GONE);
-            ((MaterialTextView) card.findViewById(R.id.textActionTypeLabel)).setText(options[i]);
+            MaterialTextView label = card.findViewById(R.id.textActionTypeLabel);
+            label.setText(options[i]);
+            ViewGroup.MarginLayoutParams labelParams = (ViewGroup.MarginLayoutParams) label.getLayoutParams();
+            labelParams.topMargin = 0;
+            label.setLayoutParams(labelParams);
 
             GridLayout.LayoutParams params = new GridLayout.LayoutParams(
                     GridLayout.spec(GridLayout.UNDEFINED, 1f),
                     GridLayout.spec(GridLayout.UNDEFINED, 1f)
             );
             params.width = 0;
-            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            params.height = dpToPx(72);
             params.setMargins(dpToPx(4), dpToPx(4), dpToPx(4), dpToPx(4));
             card.setLayoutParams(params);
 
             card.setOnClickListener(v -> {
                 selectedCommonIndex = index;
                 updateCommonActionsGrid();
-                scheduleAutoSave();
+                saveConfigFromUser();
             });
 
             commonActionCards.add(card);
@@ -359,7 +339,6 @@ public class MainActivity extends AppCompatActivity {
         cardSelectApp.setOnClickListener(v -> showAppPickerDialog());
         cardSelectActivity.setOnClickListener(v -> {
             if (TextUtils.isEmpty(selectedPackageName)) {
-                Toast.makeText(this, R.string.prompt_select_app, Toast.LENGTH_SHORT).show();
                 return;
             }
             showActivityPickerDialog();
@@ -395,17 +374,35 @@ public class MainActivity extends AppCompatActivity {
             actionTypeAdapter.notifyDataSetChanged();
             scrollCarouselToPosition(selectedTypeIndex);
             updateLayout(selectedTypeIndex);
+            lastSavedConfigSignature = currentConfigSignature();
         } finally {
             isSyncingConfig = false;
         }
     }
 
-    // Issue 4: auto-save with 1 s debounce
-    private void scheduleAutoSave() {
+    private void saveConfigFromUser() {
         if (isSyncingConfig) return;
-        hasPendingAutoSave = true;
-        autoSaveHandler.removeCallbacks(autoSaveRunnable);
-        autoSaveHandler.postDelayed(autoSaveRunnable, 1000);
+        String signature = currentConfigSignature();
+        if (TextUtils.equals(signature, lastSavedConfigSignature)) return;
+        saveConfig();
+    }
+
+    private void setupValueCommitSave(EditText editText) {
+        editText.setOnEditorActionListener((v, actionId, event) -> {
+            boolean enterPressed = event != null
+                    && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER
+                    && event.getAction() == android.view.KeyEvent.ACTION_UP;
+            if (actionId != android.view.inputmethod.EditorInfo.IME_ACTION_NONE || enterPressed) {
+                saveConfigFromUser();
+            }
+            return false;
+        });
+
+        editText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                saveConfigFromUser();
+            }
+        });
     }
 
     private void saveConfig() {
@@ -421,17 +418,25 @@ public class MainActivity extends AppCompatActivity {
         SPUtils.putString(prefix + "shell", editShell.getText().toString().trim());
         SPUtils.putBoolean(prefix + "vibrate", switchVibrate.isChecked());
         SPUtils.putBoolean(prefix + "screen_off", switchScreenOff.isChecked());
-
-        Toast.makeText(this, R.string.message_saved, Toast.LENGTH_SHORT).show();
+        lastSavedConfigSignature = currentConfigSignature();
 
         if (TYPE_CUSTOM_SHELL.equals(type) && !isFinishing()) {
-            if (applyRootPermission()) {
-                Toast.makeText(this, R.string.message_root_granted, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, R.string.message_root_denied, Toast.LENGTH_SHORT).show();
-            }
+            applyRootPermission();
             showShellPermissionDialog();
         }
+    }
+
+    private String currentConfigSignature() {
+        return selectedGestureIndex
+                + "|" + getSelectedTypeValue()
+                + "|" + selectedCommonIndex
+                + "|" + selectedPackageName.trim()
+                + "|" + selectedActivityName.trim()
+                + "|" + editUrlScheme.getText().toString().trim()
+                + "|" + editxiaobuShortcuts.getText().toString().trim()
+                + "|" + editShell.getText().toString().trim()
+                + "|" + switchVibrate.isChecked()
+                + "|" + switchScreenOff.isChecked();
     }
 
     // ── App loading ─────────────────────────────────────────────────────────
@@ -564,7 +569,7 @@ public class MainActivity extends AppCompatActivity {
             activityOptions.clear();
             filteredActivityOptions.clear();
             updateSelectionViews();
-            scheduleAutoSave();
+            saveConfigFromUser();
             if (activityPickerDialog != null) activityPickerDialog.dismiss();
             if (appPickerDialog != null) appPickerDialog.dismiss();
             if (TYPE_CUSTOM_ACTIVITY.equals(getSelectedTypeValue())) {
@@ -590,6 +595,7 @@ public class MainActivity extends AppCompatActivity {
 
         BottomSheetDialog bsd = new BottomSheetDialog(this);
         bsd.setContentView(dialogView);
+        configurePickerBottomSheet(bsd);
         appPickerDialog = bsd;
         appPickerDialog.setOnDismissListener(d -> {
             appPickerDialog = null;
@@ -617,7 +623,7 @@ public class MainActivity extends AppCompatActivity {
         listViewActivities.setOnItemClickListener((parent, view, position, id) -> {
             selectedActivityName = filteredActivityOptions.get(position).className;
             updateSelectionViews();
-            scheduleAutoSave();
+            saveConfigFromUser();
             if (activityPickerDialog != null) activityPickerDialog.dismiss();
         });
 
@@ -630,6 +636,7 @@ public class MainActivity extends AppCompatActivity {
 
         BottomSheetDialog bsd = new BottomSheetDialog(this);
         bsd.setContentView(dialogView);
+        configurePickerBottomSheet(bsd);
         activityPickerDialog = bsd;
         activityPickerDialog.setOnDismissListener(d -> {
             activityPickerDialog = null;
@@ -642,6 +649,30 @@ public class MainActivity extends AppCompatActivity {
         });
         activityPickerDialog.show();
         loadActivitiesForPackage(selectedPackageName, false, null);
+    }
+
+    private void configurePickerBottomSheet(BottomSheetDialog dialog) {
+        dialog.setOnShowListener(d -> {
+            FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheet == null) return;
+
+            ViewGroup.LayoutParams params = bottomSheet.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            bottomSheet.setLayoutParams(params);
+
+            BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+            behavior.setFitToContents(false);
+            behavior.setExpandedOffset(dpToPx(24));
+            behavior.setPeekHeight(calculatePickerPeekHeight());
+            behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        });
+    }
+
+    private int calculatePickerPeekHeight() {
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        int maxPeekHeight = Math.min(dpToPx(620), screenHeight - dpToPx(72));
+        int preferredPeekHeight = Math.max(dpToPx(360), Math.round(screenHeight * 0.72f));
+        return Math.max(dpToPx(280), Math.min(preferredPeekHeight, maxPeekHeight));
     }
 
     // Issue 1: fade animation on list when chip filter changes
@@ -883,6 +914,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateLayout(int pos) {
+        if (mainContent != null && !isSyncingConfig) {
+            AutoTransition transition = new AutoTransition();
+            transition.setDuration(220);
+            TransitionManager.beginDelayedTransition(mainContent, transition);
+        }
         layoutCommon.setVisibility(View.GONE);
         layoutCustomActivity.setVisibility(View.GONE);
         layoutActivitySelection.setVisibility(View.GONE);
@@ -966,7 +1002,7 @@ public class MainActivity extends AppCompatActivity {
                 notifyDataSetChanged();
                 updateLayout(selectedTypeIndex);
                 scrollCarouselSmooth(selectedTypeIndex);
-                scheduleAutoSave();
+                saveConfigFromUser();
             });
         }
 

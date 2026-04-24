@@ -24,10 +24,6 @@
     <string name="hint_shell_command">输入要执行的命令</string>
     <string name="hint_search_apps">搜索应用名称或包名</string>
     <string name="hint_search_activities">搜索 Activity 名称或类名</string>
-    <string name="message_activate_module_first">请先激活模块</string>
-    <string name="message_saved">已保存（3 秒后生效）</string>
-    <string name="message_root_granted">已被授予 Root 权限</string>
-    <string name="message_root_denied">已被拒绝 Root 权限，无法执行 Shell 命令</string>
     <string name="dialog_title_notice">提示</string>
     <string name="dialog_shell_permission_message">由于系统限制，执行 Shell 命令需要 Root 权限和自启动权限，否则无法执行。\n应用只会在执行命令的瞬间启动，执行完毕后自动退出，不会占用后台内存。\n在某些情况下，你可能还需要在应用详情的耗电管理中完全允许后台行为。</string>
     <string name="action_authorize">去授权</string>

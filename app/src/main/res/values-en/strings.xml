@@ -24,10 +24,6 @@
     <string name="hint_shell_command">Enter the command to execute</string>
     <string name="hint_search_apps">Search app name or package</string>
     <string name="hint_search_activities">Search activity label or class</string>
-    <string name="message_activate_module_first">Please activate the module first</string>
-    <string name="message_saved">Saved (takes effect in 3 seconds)</string>
-    <string name="message_root_granted">Root permission granted</string>
-    <string name="message_root_denied">Root permission denied, shell commands cannot run</string>
     <string name="dialog_title_notice">Notice</string>
     <string name="dialog_shell_permission_message">Because of system restrictions, running shell commands requires both root permission and auto-start permission.\nThe app only starts when the command runs and exits automatically afterwards, so it will not stay in memory.\nIn some cases, you may also need to fully allow background activity in the battery settings.</string>
     <string name="action_authorize">Authorize</string>

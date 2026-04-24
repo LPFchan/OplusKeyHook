@@ -13,21 +13,10 @@
         android:paddingBottom="88dp">
 
         <LinearLayout
+            android:id="@+id/mainContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <!-- Title -->
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:paddingTop="20dp"
-                android:paddingBottom="16dp"
-                android:text="@string/app_name"
-                android:textAppearance="?attr/textAppearanceHeadlineMedium"
-                android:textColor="?attr/colorOnSurface" />
 
             <!-- Gesture selector -->
             <LinearLayout
@@ -36,6 +25,7 @@
                 android:orientation="horizontal"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
+                android:layout_marginTop="44dp"
                 android:layout_marginBottom="8dp">
 
                 <com.google.android.material.card.MaterialCardView
@@ -402,6 +392,7 @@
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
                     app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxBackgroundColor="?attr/colorSurfaceContainerHigh"
                     app:boxStrokeWidth="0dp"
                     app:boxStrokeWidthFocused="2dp"
                     android:hint="@string/hint_url_scheme"
@@ -412,6 +403,7 @@
                         android:id="@+id/editUrlScheme"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
                         android:inputType="textUri" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
@@ -442,6 +434,7 @@
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
                     app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxBackgroundColor="?attr/colorSurfaceContainerHigh"
                     app:boxStrokeWidth="0dp"
                     app:boxStrokeWidthFocused="2dp"
                     android:hint="@string/hint_xiaobu_shortcut_id"
@@ -452,6 +445,7 @@
                         android:id="@+id/editxiaobuShortcuts"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
                         android:inputType="textNoSuggestions" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
@@ -482,6 +476,7 @@
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
                     app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxBackgroundColor="?attr/colorSurfaceContainerHigh"
                     app:boxStrokeWidth="0dp"
                     app:boxStrokeWidthFocused="2dp"
                     android:hint="@string/hint_shell_command"
@@ -492,6 +487,7 @@
                         android:id="@+id/editShell"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
                         android:inputType="textNoSuggestions" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
