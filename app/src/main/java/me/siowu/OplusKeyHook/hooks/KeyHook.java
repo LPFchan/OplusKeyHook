@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -156,6 +157,9 @@ public class KeyHook {
             case "常用功能":
                 doCommonAction(prefix);
                 break;
+            case "打开应用":
+                doOpenApp(prefix);
+                break;
             case "自定义Activity":
                 doCustomActivity(prefix);
                 break;
@@ -215,6 +219,41 @@ public class KeyHook {
             return;
         }
         startActivity(packageName, activity);
+    }
+
+    public void doOpenApp(String prefix) {
+        sp.reload();
+        String packageName = sp.getString(prefix + "package", "");
+        if (packageName.isEmpty()) {
+            XposedBridge.log("打开应用包名为空");
+            return;
+        }
+        startPackage(packageName);
+    }
+
+    private void startPackage(String packageName) {
+        try {
+            Context systemContext = (Context) XposedHelpers.callStaticMethod(
+                    XposedHelpers.findClass("android.app.ActivityThread", null),
+                    "currentApplication"
+            );
+            if (systemContext == null) {
+                XposedBridge.log("startPackage: systemContext == null");
+                return;
+            }
+
+            PackageManager pm = systemContext.getPackageManager();
+            Intent intent = pm.getLaunchIntentForPackage(packageName);
+            if (intent == null) {
+                XposedBridge.log("startPackage: launch intent not found for " + packageName);
+                return;
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            systemContext.startActivity(intent);
+            XposedBridge.log("成功打开应用: " + packageName);
+        } catch (Throwable t) {
+            XposedBridge.log("打开应用失败: " + t.getMessage());
+        }
     }
 
     public void doCustomUrlScheme(String prefix) {
