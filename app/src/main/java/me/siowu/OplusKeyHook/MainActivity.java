@@ -224,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         recyclerActionType.setLayoutManager(layoutManager);
         recyclerActionType.setAdapter(actionTypeAdapter);
+        recyclerActionType.setItemAnimator(null);
 
         LinearSnapHelper snapHelper = new LinearSnapHelper();
         snapHelper.attachToRecyclerView(recyclerActionType);
@@ -917,6 +918,7 @@ public class MainActivity extends AppCompatActivity {
         if (mainContent != null && !isSyncingConfig) {
             AutoTransition transition = new AutoTransition();
             transition.setDuration(220);
+            transition.excludeTarget(recyclerActionType, true);
             TransitionManager.beginDelayedTransition(mainContent, transition);
         }
         layoutCommon.setVisibility(View.GONE);
