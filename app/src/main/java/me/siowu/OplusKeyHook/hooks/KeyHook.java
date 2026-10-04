@@ -529,18 +529,15 @@ public class KeyHook {
                 return;
             }
 
-            // *** 显式广播：直接指定组件 ***
-            Intent intent = new Intent();
-            intent.setComponent(new ComponentName(
-                    "me.siowu.OplusKeyHook",
-                    "me.siowu.OplusKeyHook.utils.ShellReceiver"
-            ));
+            // Send only to the launcher receiver protected by our signature permission.
+            Intent intent = new Intent(LauncherHook.ACTION_EXECUTE_SHELL);
+            intent.setPackage(LauncherHook.LAUNCHER_PACKAGE);
             intent.putExtra("cmd", cmd);
 
-            // 发送广播（不需要 action，不会被过滤）
+            // system_server is authorized to send to the permission-protected receiver.
             systemContext.sendBroadcast(intent);
 
-            XposedBridge.log("已请求 APP 执行 Shell: " + cmd);
+            XposedBridge.log("已请求系统桌面执行 Shell: " + cmd);
 
         } catch (Throwable t) {
             XposedBridge.log("发送广播失败: " + Log.getStackTraceString(t));

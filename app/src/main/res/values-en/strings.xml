@@ -25,7 +25,7 @@
     <string name="hint_search_apps">Search app name or package</string>
     <string name="hint_search_activities">Search activity label or class</string>
     <string name="dialog_title_notice">Notice</string>
-    <string name="dialog_shell_permission_message">Because of system restrictions, running shell commands requires both root permission and auto-start permission.\nThe app only starts when the command runs and exits automatically afterwards, so it will not stay in memory.\nIn some cases, you may also need to fully allow background activity in the battery settings.</string>
+    <string name="dialog_shell_permission_message">Shell commands run through the system launcher and require root permission.\nEnable the System Launcher scope for this module in LSPosed, then restart the launcher or reboot.\nTap Authorize and grant root access to the launcher in your root manager.</string>
     <string name="action_authorize">Authorize</string>
     <string name="action_confirm">OK</string>
     <string name="prompt_select_app">Select an app</string>

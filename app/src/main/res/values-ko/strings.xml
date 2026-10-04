@@ -25,7 +25,7 @@
     <string name="hint_search_apps">앱 이름 또는 패키지 검색</string>
     <string name="hint_search_activities">Activity 이름 또는 클래스 검색</string>
     <string name="dialog_title_notice">안내</string>
-    <string name="dialog_shell_permission_message">시스템 제한으로 인해 Shell 명령을 실행하려면 Root 권한과 자동 시작 권한이 모두 필요합니다.\n앱은 명령을 실행하는 순간에만 시작되고 완료 후 자동으로 종료되므로 백그라운드 메모리를 차지하지 않습니다.\n경우에 따라 배터리 설정에서 백그라운드 동작을 완전히 허용해야 할 수도 있습니다.</string>
+    <string name="dialog_shell_permission_message">Shell 명령은 시스템 런처에서 실행되며 Root 권한이 필요합니다.\nLSPosed에서 모듈의 시스템 런처 범위를 활성화한 다음 런처를 다시 시작하거나 재부팅하세요.\n권한 부여를 누르고 Root 관리자에서 런처의 Root 권한을 허용하세요.</string>
     <string name="action_authorize">권한 설정</string>
     <string name="action_confirm">확인</string>
     <string name="prompt_select_app">앱을 선택하세요</string>
