@@ -4,6 +4,7 @@ package me.siowu.OplusKeyHook;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import me.siowu.OplusKeyHook.hooks.KeyHook;
+import me.siowu.OplusKeyHook.hooks.LauncherHook;
 import me.siowu.OplusKeyHook.hooks.ShortcutsHook;
 
 public class MainHook implements IXposedHookLoadPackage {
@@ -12,6 +13,8 @@ public class MainHook implements IXposedHookLoadPackage {
         String packageName = lpparam.packageName;
         if ("android".equals(packageName)) {
             new KeyHook().handleLoadPackage(lpparam);
+        } else if ("com.android.launcher".equals(packageName)) {
+            new LauncherHook().handleLoadPackage(lpparam);
         } else if ("com.coloros.shortcuts".equals(packageName)) {
             new ShortcutsHook().handleLoadPackage(lpparam);
 //            暂时只启用捕获点开一键指令之后添加到桌面

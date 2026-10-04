@@ -30,9 +30,15 @@ This module hooks the native system key listener to intercept shortcut-key event
 ## 🚀Usage
 
 1. Install an Xposed-compatible environment and activate this module.
-2. Set the module scope to **System Framework**.
+2. Set the module scope to **System Framework**. For shell actions, also enable
+   **System Launcher** (`com.android.launcher`).
 3. Reboot the phone, open the module, choose the action you want, and save it to apply immediately.
    *Note: only the first activation and module updates require a reboot. Later key-function changes take effect without rebooting.*
+
+Shell commands run in the launcher process. After enabling its scope, restart
+the launcher or reboot, then tap **Authorize** in the shell action dialog and
+grant the launcher root access. The command receiver requires the module’s
+signature permission and accepts broadcasts from the module and system framework.
 
 ## 🎯Roadmap
 

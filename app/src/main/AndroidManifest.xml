@@ -6,6 +6,10 @@
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <permission
+        android:name="me.siowu.OplusKeyHook.permission.EXECUTE_SHELL"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="me.siowu.OplusKeyHook.permission.EXECUTE_SHELL" />
 
     <queries>
         <intent>

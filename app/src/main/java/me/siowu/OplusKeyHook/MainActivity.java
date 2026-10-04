@@ -1,6 +1,7 @@
 package me.siowu.OplusKeyHook;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -47,13 +48,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.textview.MaterialTextView;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import me.siowu.OplusKeyHook.hooks.LauncherHook;
 import me.siowu.OplusKeyHook.utils.SPUtils;
 
 public class MainActivity extends AppCompatActivity {
@@ -938,15 +938,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public boolean applyRootPermission() {
-        try {
-            Process p = Runtime.getRuntime().exec("su -c echo root_ok");
-            String result = new BufferedReader(new InputStreamReader(p.getInputStream())).readLine();
-            p.destroy();
-            return "root_ok".equals(result);
-        } catch (Exception e) {
-            return false;
-        }
+    public void applyRootPermission() {
+        Intent intent = new Intent(LauncherHook.ACTION_EXECUTE_SHELL);
+        intent.setPackage(LauncherHook.LAUNCHER_PACKAGE);
+        intent.putExtra("cmd", "echo root_ok");
+        sendBroadcast(intent);
     }
 
     private void showShellPermissionDialog() {
@@ -954,20 +950,9 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle(R.string.dialog_title_notice)
                 .setMessage(R.string.dialog_shell_permission_message)
                 .setCancelable(false)
-                .setNegativeButton(R.string.action_authorize, (d, w) -> gotoColorOSAutoStart())
+                .setNegativeButton(R.string.action_authorize, (d, w) -> applyRootPermission())
                 .setPositiveButton(R.string.action_confirm, null)
                 .show();
-    }
-
-    private void gotoColorOSAutoStart() {
-        try {
-            Runtime.getRuntime().exec(new String[]{
-                    "su", "-c",
-                    "am start -n com.oplus.battery/com.oplus.startupapp.view.StartupAppListActivity"
-            });
-        } catch (Exception e) {
-            Log.e("gotoColorOSAutoStart", e.getMessage());
-        }
     }
 
     // ── ActionTypeAdapter ───────────────────────────────────────────────────
